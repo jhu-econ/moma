@@ -2,14 +2,44 @@
 version: 1
 project:
   id: 40be99c8-ce1e-459c-b48f-c8992d6ba792
-  # title:
-  # description:
-  # keywords: []
-  # authors: []
+  title: Modeling Macroeconomics
+  subtitle: ECON 624
+  short_title: MoMa
+  description: >-
+    A rigorous introduction to modern macroeconomic theory, building dynamic
+    models from first principles through intertemporal optimization. Covers
+    consumption theory, asset pricing, investment, growth, and DSGE frameworks
+    with analytical derivations and Python implementation.
+  keywords:
+    - macroeconomics
+    - DSGE
+    - computational economics
+    - Python
+    - consumption theory
+    - dynamic optimization
+    - business cycles
+  authors:
+    - name: Alan Lujan
+      orcid: 0000-0002-5289-7054
+      email: alujan@jhu.edu
+      affiliations:
+        - jhu-ape
+  affiliations:
+    - id: jhu-ape
+      name: Johns Hopkins University
+      department: Krieger School of Arts and Sciences
+      ror: https://ror.org/00za53h95
+      city: Washington
+      region: DC
+      country: United States
+  license: CC-BY-4.0
   github: https://github.com/jhu-econ/moma
-  # To autogenerate a Table of Contents, run "myst init --write-toc"
+  subject: Economics
+  venue:
+    title: Johns Hopkins University
+  open_access: true
 site:
   template: book-theme
-  # options:
-  #   favicon: favicon.ico
-  #   logo: site_logo.png
+  title: Modeling Macroeconomics
+  options:
+    logo_text: MoMa
