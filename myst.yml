@@ -38,6 +38,21 @@ project:
   venue:
     title: Johns Hopkins University
   open_access: true
+  toc:
+    - file: README.md
+    - title: Notes
+      children:
+        - file: notes/lecture_01.md
+    - title: QuantEcon
+      children:
+        - file: quantecon/README.md
+          title: Foundations of Scientific Computing
+          children:
+            - file: quantecon/need_for_speed.md
+            - file: quantecon/numpy.md
+            - file: quantecon/matplotlib.md
+            - file: quantecon/scipy.md
+    
 site:
   template: book-theme
   title: Modeling Macroeconomics
