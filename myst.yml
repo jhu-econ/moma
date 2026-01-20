@@ -1,0 +1,15 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+project:
+  id: 40be99c8-ce1e-459c-b48f-c8992d6ba792
+  # title:
+  # description:
+  # keywords: []
+  # authors: []
+  github: https://github.com/jhu-econ/moma
+  # To autogenerate a Table of Contents, run "myst init --write-toc"
+site:
+  template: book-theme
+  # options:
+  #   favicon: favicon.ico
+  #   logo: site_logo.png
