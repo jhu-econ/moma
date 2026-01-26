@@ -13,7 +13,7 @@ tags:
 
 ## Materials
 
-- [Slides: Foundations of Scientific Computing](../slides/m01/foundations-scientific-computing-slides.html)
+- [Slides: Foundations of Scientific Computing](/slides/m01/foundations-scientific-computing-slides.html)
 
 ## Learning Objectives
 
