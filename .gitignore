@@ -224,6 +224,9 @@ __marimo__/
 /.luarc.json
 
 
+# Source lectures (submodule/external)
+sources/
+
 # Slides build outputs
 slides/**/*.html
 slides/**/*_files/
