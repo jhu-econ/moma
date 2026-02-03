@@ -41,8 +41,8 @@ project:
     title: Johns Hopkins University
   date: 2025-01-21
   open_access: true
-  thumbnail: logo.png
-  banner: logo.png
+  thumbnail: theme/logo.png
+  banner: theme/jhu-background.jpg
   jupyter: true
   bibliography:
     - quantecon/references.bib
@@ -88,14 +88,23 @@ site:
     - title: Textbook
       url: https://jhu-econ.github.io/intertemporal-choice/
   options:
-    favicon: favicon.png
-    logo: logo.svg
+    favicon: theme/favicon.png
+    logo: theme/logo.svg
     og:
       title: Modeling Macroeconomics (ECON 624)
       description: >-
         Course materials for Dynamic Stochastic General Equilibrium Modeling
         at Johns Hopkins University. Spring 2025.
-      image: logo.png
+      image: theme/logo.png
   parts:
     footer: |
-      © 2025 Alan Lujan, Johns Hopkins University. Licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).
+      :::{div}
+      :class: text-center
+
+      ```{image} theme/krieger.logo.small.horizontal.blue.png
+      :alt: Krieger School of Arts and Sciences
+      :width: 200px
+      ```
+
+      © 2025 Alan Lujan, [Johns Hopkins University](https://www.jhu.edu). Licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).
+      :::

@@ -13,7 +13,7 @@ Colors:
 Font: Fira Sans Regular (install via: https://github.com/mozilla/Fira)
 
 Usage:
-    uv run python scripts/generate_branding.py
+    uv run python theme/generate_branding.py
 """
 
 from pathlib import Path
@@ -26,8 +26,8 @@ JHU_BLUE = "#002D72"
 ACCENT_ORANGE = "#E87722"
 CREAM = "#FDF8F0"
 
-# Output directory (project root)
-OUTPUT_DIR = Path(__file__).parent.parent
+# Output directory (same as script location)
+OUTPUT_DIR = Path(__file__).parent
 
 
 def get_fira_sans():
