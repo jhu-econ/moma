@@ -63,9 +63,9 @@ project:
       title: Notebooks
       children:
         - file: notebooks/consumption_two_period.md
+        - file: notebooks/olg_extra.md
         - file: notebooks/envelope_crra.md
         - file: notebooks/random_walk_cons_fn.md
-        - file: notebooks/olg_extra.md
     - file: quantecon/README.md
       title: QuantEcon
       children:

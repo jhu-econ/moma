@@ -328,6 +328,24 @@ which we solve to obtain the consumption growth factor
 
 We call $\Phi$ the patience factor. If $\Phi < 1$ (absolute impatience), consumption falls over time as the consumer prefers current consumption to future consumption. If $\Phi > 1$ (absolute patience), consumption grows over time.
 
+We can verify symbolically that the CRRA Euler equation yields the patience factor $\Phi = (\mathsf{R}\beta)^{1/\rho}$.
+
+```{code-cell} ipython3
+# Symbolic derivation of the patience factor
+c_t, c_tp1 = sp.symbols('c_t c_{t+1}', positive=True)
+R_sym, beta_sym, rho_sym = sp.symbols('R beta rho', positive=True)
+
+# CRRA Euler equation: c_t^{-rho} = R * beta * c_{t+1}^{-rho}
+euler_eq = sp.Eq(c_t**(-rho_sym), R_sym * beta_sym * c_tp1**(-rho_sym))
+
+# Solve for c_{t+1} and compute the growth ratio
+c_tp1_sol = sp.solve(euler_eq, c_tp1)[0]
+growth_ratio = sp.simplify(c_tp1_sol / c_t)
+
+print("Consumption growth factor c_{t+1}/c_t =")
+growth_ratio
+```
+
 ## The Intertemporal Budget Constraint
 
 Because income grows at factor $G$, the present discounted value of future income is

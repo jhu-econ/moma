@@ -33,6 +33,7 @@ Part I derives Hall's random walk proposition from quadratic utility and $\maths
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
+import sympy as sp
 from collections import namedtuple
 import pandas as pd
 ```
@@ -214,29 +215,17 @@ c_lag1 = c[:-2]       # c_{t-1}, length T-2
 delta_c_for_lag1 = delta_c[1:]  # Length T-2
 
 # Regression (a): Delta c_{t+1} on c_t
-X_a = np.vstack([np.ones(len(c_lag0)), c_lag0]).T
-y_a = delta_c
-beta_a = np.linalg.lstsq(X_a, y_a, rcond=None)[0]
-y_pred_a = X_a @ beta_a
-ss_res_a = np.sum((y_a - y_pred_a)**2)
-ss_tot_a = np.sum((y_a - np.mean(y_a))**2)
-r2_a = 1 - ss_res_a / ss_tot_a
+reg_a = stats.linregress(c_lag0, delta_c)
 
 # Regression (b): Delta c_{t+1} on c_{t-1}
-X_b = np.vstack([np.ones(len(c_lag1)), c_lag1]).T
-y_b = delta_c_for_lag1
-beta_b = np.linalg.lstsq(X_b, y_b, rcond=None)[0]
-y_pred_b = X_b @ beta_b
-ss_res_b = np.sum((y_b - y_pred_b)**2)
-ss_tot_b = np.sum((y_b - np.mean(y_b))**2)
-r2_b = 1 - ss_res_b / ss_tot_b
+reg_b = stats.linregress(c_lag1, delta_c_for_lag1)
 
 # Display results
 results = pd.DataFrame({
     'Regression': ['(a) on $c_t$', '(b) on $c_{t-1}$'],
-    'Intercept': [beta_a[0], beta_b[0]],
-    'Slope': [beta_a[1], beta_b[1]],
-    'R²': [r2_a, r2_b]
+    'Intercept': [reg_a.intercept, reg_b.intercept],
+    'Slope': [reg_a.slope, reg_b.slope],
+    'R²': [reg_a.rvalue**2, reg_b.rvalue**2]
 })
 
 print(results.to_string(index=False))
@@ -298,6 +287,29 @@ Including current income $y_t = p_t + \theta_t$, the total present value of reso
 ```{math}
 :label: cf_consumption_fn
 c_t = \frac{r}{\mathsf{R}}(b_t + \theta_t) + p_t.
+```
+
+We can derive this result symbolically by equating the present discounted values and solving for consumption.
+
+```{code-cell} ipython3
+# Symbolic derivation of the consumption function from the IBC
+c_sym, b_sym, p_sym, theta_sym = sp.symbols('c_t b_t p_t theta_t', positive=True)
+R_sym, r_sym = sp.symbols('R r', positive=True)
+
+# PDV of consumption (random walk => E[c_{t+n}] = c_t for all n)
+pdv_consumption = c_sym * R_sym / r_sym
+
+# PDV of total resources: bank balances + current income + future income
+pdv_resources = b_sym + (p_sym + theta_sym) + p_sym / r_sym
+
+# Equate and solve for c_t
+ibc = sp.Eq(pdv_consumption, pdv_resources)
+c_sol = sp.solve(ibc, c_sym)[0]
+
+# Substitute R = 1 + r and simplify
+c_simplified = sp.simplify(c_sol.subs(R_sym, 1 + r_sym))
+print("Consumption function:")
+c_simplified
 ```
 
 This consumption function reveals that the consumer treats bank balances and transitory income identically (both are multiplied by $r/\mathsf{R}$), consuming only the annuity value. In contrast, permanent income $p_t$ is consumed one-for-one because it represents an annuity that already lasts forever.
