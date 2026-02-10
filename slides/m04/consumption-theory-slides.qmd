@@ -1,0 +1,711 @@
+---
+title: "Consumption Theory"
+subtitle: "The Envelope Condition, Perfect Foresight CRRA, Random Walk, and the Consumption Function"
+format: revealjs
+date: 2025-02-10
+pyodide:
+  packages:
+    - numpy
+    - scipy
+    - matplotlib
+    - sympy
+---
+
+# The Envelope Condition
+
+## The Multiperiod Problem
+
+The consumer maximizes discounted lifetime utility:
+
+$$\max \sum_{n=0}^{T-t} \beta^n \, u(c_{t+n})$$
+
+subject to the **dynamic budget constraint:**
+
+$$m_{t+1} = (m_t - c_t)R + y_{t+1}$$
+
+where $m_t$ denotes market resources (cash-on-hand) at the beginning of period $t$.
+
+## Bellman Equation
+
+The problem in recursive form:
+
+$$v_t(m_t) = \max_{c_t} \left\{ u(c_t) + \beta \, v_{t+1}\!\left((m_t - c_t)R + y_{t+1}\right) \right\}$$
+
+**First order condition:**
+
+$$u'(c_t) = R\beta \, v'_{t+1}(m_{t+1})$$
+
+This relates marginal utility today to the marginal **value** of resources tomorrow, but how do we characterize $v'$?
+
+## The Lower-Bound Function
+
+Define a lower-bound function:
+
+$$\underline{v}_t(m_t, c_t) = u(c_t) + \beta \, v_{t+1}((m_t - c_t)R + y_{t+1})$$
+
+Its partial derivatives are:
+
+$$\underline{v}_t^{\,c} = u'(c_t) - R\beta \, v'_{t+1}(m_{t+1})$$
+
+$$\underline{v}_t^{\,m} = R\beta \, v'_{t+1}(m_{t+1})$$
+
+Note that $\underline{v}_t^{\,c} = 0$ at the optimum (this is the FOC).
+
+## Applying the Envelope Theorem
+
+By the chain rule:
+
+$$v'_t(m_t) = \underline{v}_t^{\,m} + c'_t(m_t) \cdot \underline{v}_t^{\,c}$$
+
+Since the FOC implies $\underline{v}_t^{\,c} = 0$, the second term vanishes:
+
+$$v'_t(m_t) = \underline{v}_t^{\,m} = R\beta \, v'_{t+1}(m_{t+1})$$
+
+The marginal value of $m$ equals the return on saving, regardless of how the consumption function responds to $m$.
+
+## Key Result: $v'(m) = u'(c)$
+
+The FOC says $u'(c_t) = R\beta \, v'_{t+1}(m_{t+1})$.
+
+The envelope result says $v'_t(m_t) = R\beta \, v'_{t+1}(m_{t+1})$.
+
+Equating the right-hand sides:
+
+$$\boxed{v'_t(m_t) = u'(c_t)}$$
+
+**Marginal value of resources = marginal utility of consumption.**
+
+## The Euler Equation
+
+The envelope result $v'(m) = u'(c)$ lets us eliminate the value function from the FOC entirely. Substituting into $u'(c_t) = R\beta \, v'_{t+1}(m_{t+1})$:
+
+$$u'(c_t) = R\beta \, u'(c_{t+1})$$
+
+This is the **Euler equation** for general $T$-period problems: it relates marginal utility today to marginal utility tomorrow without referencing the value function.
+
+## The Mechanical Shortcut
+
+The envelope theorem implies a practical rule: when differentiating the value function with respect to $m$, treat $c$ as constant (set $c'_t(m) = 0$).
+
+Formally, from Bellman's equation:
+
+$$v_t(m) = u(c^*(m)) + \beta \, v_{t+1}((m - c^*(m))R + y_{t+1})$$
+
+Differentiating and treating $c^*$ as constant:
+
+$$v'_t(m) = \beta R \, v'_{t+1}(m_{t+1})$$
+
+This works because the FOC zeros out $\underline{v}^c$, so any term multiplied by it vanishes.
+
+## Graphical Intuition
+
+When $m$ increases by $dm$, the consumer can either:
+
+1. **Consume it:** gain $u'(c) \, dm$ in utility
+2. **Save it:** gain $R\beta \, v'(m_{t+1}) \, dm$ in continuation value
+
+At the optimum, the FOC equates these two margins. The consumer is **indifferent at the margin** between consuming and saving the extra resources.
+
+The total gain in value is the same regardless of which margin we evaluate. This is why the envelope works.
+
+## Code: Value Function and Envelope
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+R, beta, rho = 1.04, 0.96, 2.0
+y2 = 1.0
+
+m1 = np.linspace(0.5, 8, 200)
+total_wealth = m1 + y2 / R
+
+# Analytical optimal c1 and c2
+denom = 1 + R**(-1) * (R * beta) ** (1 / rho)
+c1_opt = total_wealth / denom
+c2_opt = (m1 - c1_opt) * R + y2
+
+# Value function: v(m) = u(c1) + beta*u(c2)
+v_vals = c1_opt**(1-rho)/(1-rho) + beta * c2_opt**(1-rho)/(1-rho)
+
+# Numerical v'(m) vs analytical u'(c1)
+dv_dm = np.gradient(v_vals, m1)
+du_dc = c1_opt**(-rho)
+
+fig, ax = plt.subplots()
+ax.plot(m1, dv_dm, 'b-', lw=2, label=r"$v'(m)$ (numerical)")
+ax.plot(m1, du_dc, 'r--', lw=2, label=r"$u'(c^*(m))$")
+ax.set_xlabel('$m_1$')
+ax.set_ylabel('Marginal value / marginal utility')
+ax.set_title("Envelope result: $v'(m) = u'(c^*(m))$")
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.show()
+```
+
+## Code: Saving Rate and the IES
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+beta = 0.96
+rho_vals = [0.5, 1.0, 2.0, 4.0]
+R_vals = np.linspace(0.8, 1.5, 200)
+
+fig, ax = plt.subplots()
+for rho in rho_vals:
+    denom = 1 + R_vals**(-1) * (R_vals * beta) ** (1 / rho)
+    mpc = 1 / denom
+    saving_rate = 1 - mpc
+    ax.plot(R_vals, saving_rate, lw=2,
+            label=rf'$\rho={rho}$ (IES $= {1/rho:.1f}$)')
+
+ax.set_xlabel('Gross interest rate $R$')
+ax.set_ylabel('Saving rate $(m - c_1) / m$')
+ax.set_title('Higher IES: saving responds more to $R$')
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.show()
+```
+
+# Perfect Foresight CRRA Model
+
+## The Multiperiod Problem
+
+A consumer with CRRA utility $u(c) = c^{1-\rho}/(1-\rho)$ maximizes
+
+$$\max \sum_{n=0}^{T-t} \beta^n \, u(c_{t+n})$$
+
+subject to the dynamic budget constraint
+
+$$m_{t+1} = (m_t - c_t)R + p_{t+1}$$
+
+where $m_t$ is market resources (cash-on-hand), $p_t$ is permanent labor income growing at factor $G$:
+
+$$p_{t+1} = G \, p_t$$
+
+## Consumption Growth
+
+From the envelope condition, the Euler equation is $u'(c_t) = R\beta \, u'(c_{t+1})$. With CRRA utility $u'(c) = c^{-\rho}$:
+
+$$c_t^{-\rho} = R\beta \, c_{t+1}^{-\rho} \quad \Longrightarrow \quad \frac{c_{t+1}}{c_t} = (R\beta)^{1/\rho} \equiv \Phi$$
+
+The **absolute patience factor** $\Phi$ governs consumption growth every period.
+
+## Absolute Impatience
+
+The value of $\Phi$ relative to 1 determines the **absolute impatience condition** (AIC):
+
+- $\Phi < 1$: the consumer is **absolutely impatient** (consumption falls over time)
+- $\Phi > 1$: the consumer is **absolutely patient** (consumption rises over time)
+- $\Phi = 1$: the consumer is **absolutely poised** (constant consumption)
+
+## The Intertemporal Budget Constraint
+
+The present discounted value of consumption must equal total wealth:
+
+$$\text{PDV}(c) = b_t + \text{PDV}(p) \equiv o_t$$
+
+**Human wealth** $h_t$ is the PDV of future labor income:
+
+$$h_t = \sum_{n=0}^{T-t} R^{-n} p_{t+n} = p_t \sum_{n=0}^{T-t} \left(\frac{G}{R}\right)^n = p_t \left(\frac{1 - (G/R)^{T-t+1}}{1 - G/R}\right)$$
+
+**Overall wealth** $o_t = b_t + h_t$ is the sum of nonhuman and human wealth.
+
+## Finite Human Wealth Condition (FHWC)
+
+For the infinite-horizon case ($T \to \infty$), human wealth must be finite:
+
+$$\boxed{G < R} \qquad \text{(FHWC)}$$
+
+If income grows faster than the interest rate forever, the PDV of future income is infinite, and the problem has no well-defined solution.
+
+When the FHWC holds:
+
+$$h_t = \frac{p_t}{1 - G/R} = \frac{p_t \, R}{R - G}$$
+
+## Return Impatience Condition (RIC)
+
+Since consumption grows at rate $\Phi$ each period, its PDV is finite only if
+
+$$\boxed{\Phi_R \equiv \frac{\Phi}{R} = \frac{(R\beta)^{1/\rho}}{R} < 1} \qquad \text{(RIC)}$$
+
+The **return patience factor** $\Phi_R$ measures whether the desired growth rate of consumption exceeds the interest rate.
+
+- If $\Phi_R \geq 1$, the consumer wants consumption to grow at least as fast as $R$, and the PDV of consumption is infinite.
+- The RIC imposes a minimum level of impatience for the model to have a well-defined solution.
+
+## The Consumption Function (Finite Horizon)
+
+Combining the IBC with consumption growth at rate $\Phi$:
+
+$$c_t = \underbrace{\left(\frac{1 - \Phi_R}{1 - \Phi_R^{\,T-t+1}}\right)}_{\equiv \, \kappa_t} \cdot \, o_t$$
+
+where $\kappa_t$ is the **marginal propensity to consume** out of overall wealth.
+
+**Key properties of $\kappa_t$:**
+
+- In the last period, $\kappa_T = 1$ (consume everything)
+- As the horizon grows, $\kappa_t$ falls (spread wealth over more periods)
+- The MPC satisfies the recursion $\kappa_t^{-1} = 1 + \Phi_R \, \kappa_{t+1}^{-1}$
+
+## The Infinite Horizon Solution
+
+Taking $T \to \infty$ under the FHWC and RIC:
+
+$$c_t = \underbrace{(1 - \Phi_R)}_{\equiv \, \kappa} \cdot \, o_t = \left(\frac{R - (R\beta)^{1/\rho}}{R}\right) o_t$$
+
+The infinite-horizon MPC $\kappa = 1 - \Phi_R$ is:
+
+- Positive (by the RIC)
+- Constant over time
+- Independent of the level of wealth
+
+This is a **linear** consumption function: spending is proportional to total wealth.
+
+## Code: Finite vs Infinite Horizon MPC
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+R, beta, rho = 1.04, 0.96, 2.0
+Phi = (R * beta) ** (1 / rho)
+Phi_R = Phi / R
+
+horizons = np.arange(1, 61)
+kappa_finite = (1 - Phi_R) / (1 - Phi_R ** horizons)
+kappa_inf = 1 - Phi_R
+
+fig, ax = plt.subplots()
+ax.plot(horizons, kappa_finite, 'b-', lw=2, label='Finite horizon MPC')
+ax.axhline(kappa_inf, color='r', ls='--', lw=2,
+           label=f'Infinite horizon $\\kappa = {kappa_inf:.4f}$')
+ax.set_xlabel('Remaining periods $T - t$')
+ax.set_ylabel('MPC $\\kappa_t$')
+ax.set_title('MPC converges to infinite-horizon value as horizon grows')
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.show()
+```
+
+## Sustainable Consumption
+
+What spending rate leaves total wealth intact forever?
+
+$$o_{t+1} = (o_t - c_t)R \quad \Longrightarrow \quad \bar{c} = \frac{r}{R} \, o_t$$
+
+The **sustainable** (wealth-preserving) spending rate is $r/R$, the interest earnings on total wealth divided by the return factor.
+
+Whether the consumer spends above or below sustainability depends on impatience:
+
+- $\kappa > r/R$: **absolutely impatient** ($\Phi < 1$), spending exceeds interest income
+- $\kappa = r/R$: **absolutely poised** ($R\beta = 1$), spending equals interest income
+- $\kappa < r/R$: **absolutely patient** ($\Phi > 1$), wealth accumulates over time
+
+## Normalizing by Permanent Income
+
+Divide all variables by permanent income $p_t$: let $\hat{c}_t = c_t/p_t$, $\hat{m}_t = m_t/p_t$, $\hat{b}_t = b_t/p_t$.
+
+The budget constraint becomes
+
+$$\hat{b}_{t+1} = (\hat{m}_t - \hat{c}_t)(R/G), \qquad \hat{m}_{t+1} = \hat{b}_{t+1} + 1$$
+
+and the normalized consumption function is
+
+$$\hat{c}_t = (1 - \Phi_R) \, \hat{o}_t$$
+
+## The Growth Impatience Condition
+
+Whether the wealth-to-income ratio is rising or falling depends on the **growth impatience condition** (GIC):
+
+$$\boxed{\Phi_G \equiv \frac{\Phi}{G} = \frac{(R\beta)^{1/\rho}}{G} < 1} \qquad \text{(GIC)}$$
+
+A "growth impatient" consumer ($\Phi_G < 1$) spends more than income, drawing down $\hat{o}$.
+
+## Code: Impatience Conditions
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+rho = 2.0
+R = 1.04
+r = R - 1
+G = 1.02
+
+beta_vals = np.linspace(0.90, 1.02, 300)
+Phi = (R * beta_vals) ** (1 / rho)
+
+fig, ax = plt.subplots()
+ax.plot(beta_vals, Phi, 'b-', lw=2, label=r'$\Phi = (R\beta)^{1/\rho}$')
+ax.axhline(1, color='gray', ls=':', lw=1, label='AIC boundary ($\Phi = 1$)')
+ax.axhline(R, color='red', ls='--', lw=1.5, label=f'RIC boundary ($\Phi = R = {R}$)')
+ax.axhline(G, color='green', ls='--', lw=1.5, label=f'GIC boundary ($\Phi = G = {G}$)')
+ax.fill_between(beta_vals, 0, 1, alpha=0.05, color='blue')
+ax.set_xlabel(r'Discount factor $\beta$')
+ax.set_ylabel(r'Patience factor $\Phi$')
+ax.set_title(r'Impatience conditions for $\rho = 2$, $R = 1.04$, $G = 1.02$')
+ax.legend(fontsize=8)
+ax.set_ylim(0.93, 1.06)
+ax.grid(True, alpha=0.3)
+plt.show()
+```
+
+## The Approximate Consumption Function
+
+When $\beta = 1/(1+\delta)$ with time preference rate $\delta$, an approximation gives
+
+$$c_t \approx \left(\underbrace{r}_{\text{income}} - \underbrace{\rho^{-1}(r - \delta)}_{\text{substitution}}\right) \cdot o_t$$
+
+where $o_t$ includes human wealth $h_t = p_t \cdot R/(r - g)$ (the **human wealth effect**).
+
+Three effects of a change in $r$:
+
+- **Income effect:** higher $r$ raises the payout rate on wealth ($c \uparrow$)
+- **Substitution effect:** higher $r$ makes future consumption cheaper ($c \downarrow$)
+- **Human wealth effect:** higher $r$ reduces the PDV of future labor income ($c \downarrow$)
+
+# Applications
+
+## How Large Is the Human Wealth Effect?
+
+With $b_t = 0$ (no financial wealth), approximate consumption is
+
+$$c_t \approx \left(r - \rho^{-1}(r-\delta)\right) \frac{p_t}{r - g}$$
+
+**Numerical example** with $(r, \delta, g, \rho) = (0.04, 0.04, 0.02, 2)$:
+
+$$c_t \approx 0.04 \cdot \frac{p_t}{0.02} = 2 \, p_t$$
+
+## The Human Wealth Effect Dominates
+
+Now suppose the interest rate $r$ falls from $0.04$ to $0.03$:
+
+$$c_t \approx 0.035 \cdot \frac{p_t}{0.01} = 3.5 \, p_t$$
+
+A one percentage point drop in $r$ raises consumption by 75%. The human wealth effect is far stronger than the income and substitution effects combined (Summers, 1981).
+
+## Code: Human Wealth Effect
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+rho, delta = 2.0, 0.04
+r_vals = np.linspace(0.025, 0.10, 200)
+
+fig, ax = plt.subplots()
+for g, color in [(0.01, 'blue'), (0.02, 'red'), (0.03, 'green')]:
+    valid = r_vals > g
+    mpc_approx = r_vals[valid] - (r_vals[valid] - delta) / rho
+    h_ratio = 1.0 / (r_vals[valid] - g)
+    c_ratio = mpc_approx * h_ratio
+    ax.plot(r_vals[valid], c_ratio, color=color, lw=2,
+            label=f'$g = {g:.0%}$')
+
+ax.set_xlabel('Interest rate $r$')
+ax.set_ylabel(r'Consumption / permanent income $c_t / p_t$')
+ax.set_title('Human wealth effect: consumption is very sensitive to $r$')
+ax.legend()
+ax.set_ylim(0, 8)
+ax.grid(True, alpha=0.3)
+plt.show()
+```
+
+## The Saving Rate and Interest Rates
+
+For a wealthy consumer ($a_{t-1} \to \infty$), the saving rate asymptotes to
+
+$$\varsigma \approx \frac{\rho^{-1}(r - \delta)}{r}$$
+
+and the response of the saving rate to the interest rate $r$ is
+
+$$\frac{d\varsigma}{dr} = \rho^{-1} \delta \, r^{-2}$$
+
+## Saving Rate: A Numerical Example
+
+With $r = \delta = 0.05$ and $\rho = 2$:
+
+$$\frac{d\varsigma}{dr} = \frac{1}{2} \cdot \frac{0.05}{0.0025} = 10$$
+
+A one percentage point rise in $r$ raises the saving rate by 10 percentage points. The model predicts an enormous sensitivity of saving to interest rates.
+
+## Code: Saving Rate Response
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+delta = 0.04
+rho_vals = [1.0, 2.0, 4.0]
+r_vals = np.linspace(0.01, 0.12, 200)
+
+fig, ax = plt.subplots()
+for rho in rho_vals:
+    varsigma = (r_vals - delta) / (rho * r_vals)
+    ax.plot(r_vals, varsigma, lw=2,
+            label=rf'$\rho = {rho}$ (IES $= {1/rho:.1f}$)')
+
+ax.axhline(0, color='k', lw=0.5)
+ax.axvline(delta, color='gray', ls=':', alpha=0.5)
+ax.text(delta + 0.002, -0.3, r'$r = \delta$', fontsize=9, color='gray')
+ax.set_xlabel('Interest rate $r$')
+ax.set_ylabel(r'Saving rate $\varsigma$')
+ax.set_title('Saving rate is very sensitive to the interest rate')
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.show()
+```
+
+# The Random Walk Model
+
+## From Euler Equation to Random Walk
+
+When future consumption is uncertain, the Euler equation becomes
+
+$$u'(c_t) = R\beta \, \mathbb{E}_t[u'(c_{t+1})]$$
+
+Suppose the utility function is **quadratic**: $u(c) = -(1/2)(\bar{c} - c)^2$, so $u'(c) = \bar{c} - c$, where $\bar{c}$ is the bliss point (assumed unreachable).
+
+## The Random Walk Result
+
+With $R\beta = 1$, the Euler equation under quadratic utility reduces to
+
+$$\bar{c} - c_t = \mathbb{E}_t[\bar{c} - c_{t+1}] \quad \Longrightarrow \quad \boxed{\mathbb{E}_t[c_{t+1}] = c_t}$$
+
+Consumption follows a **martingale**: the best forecast of next period's consumption is today's consumption.
+
+## Hall's Random Walk Proposition
+
+Defining the consumption innovation $\epsilon_{t+1} = c_{t+1} - c_t$:
+
+$$\Delta c_{t+1} = \epsilon_{t+1}, \qquad \mathbb{E}_t[\epsilon_{t+1}] = 0$$
+
+**Hall (1978):** No information known to the consumer at time $t$ can predict how consumption will change between $t$ and $t+1$.
+
+**Testable implication:** lagged income, lagged stock returns, or any other variable in the consumer's information set should have zero predictive power for $\Delta c_{t+1}$.
+
+This shifted macroeconomics from estimating consumption functions to testing Euler equations.
+
+## Code: Simulating a Consumption Random Walk
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+T = 100
+c0 = 50.0
+sigma = 2.0
+
+epsilon = np.random.normal(0, sigma, T)
+c = np.zeros(T + 1)
+c[0] = c0
+for t in range(T):
+    c[t + 1] = c[t] + epsilon[t]
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+axes[0].plot(c, 'b-', lw=1.5)
+axes[0].set_xlabel('Period')
+axes[0].set_ylabel('Consumption $c_t$')
+axes[0].set_title('A consumption random walk')
+axes[0].grid(True, alpha=0.3)
+
+# Lagged consumption should not predict changes
+dc = np.diff(c)
+axes[1].scatter(c[:-1], dc, alpha=0.4, s=15)
+axes[1].axhline(0, color='k', lw=0.5)
+corr = np.corrcoef(c[:-1], dc)[0, 1]
+axes[1].set_xlabel(r'Lagged consumption $c_t$')
+axes[1].set_ylabel(r'Consumption change $\Delta c_{t+1}$')
+axes[1].set_title(f'No predictability (corr = {corr:.3f})')
+axes[1].grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+```
+
+## Implications
+
+The random walk result is powerful because it provides a **model-free test**: we do not need to know the consumer's income process, preferences, or wealth.
+
+**Strengths:**
+
+- Testable without specifying the income process
+- Applies to any consumer satisfying quadratic utility and $R\beta = 1$
+- Spawned a large empirical literature testing for excess sensitivity and excess smoothness
+
+**Limitations:**
+
+- Requires quadratic utility (no precautionary saving motive)
+- Requires $R\beta = 1$ (knife-edge condition)
+- With CRRA utility, consumption growth depends on $R$, $\beta$, and $\rho$, and the random walk breaks down
+
+# The Consumption Function
+
+## The CEQ Consumer
+
+A consumer with quadratic utility $u(c) = -(1/2)(\bar{c} - c)^2$ and $R\beta = 1$ faces the budget constraint
+
+$$b_{t+1} = (b_t + y_t - c_t)R$$
+
+## The Income Process
+
+The income process has **permanent** and **transitory** components:
+
+$$p_{t+1} = p_t + \psi_{t+1} \qquad \text{(permanent income)}$$
+
+$$y_{t+1} = p_{t+1} + \theta_{t+1} \qquad \text{(observed income)}$$
+
+where $\psi_{t+1}$ and $\theta_{t+1}$ are mean-zero white noise shocks.
+
+## Solving via the IBC
+
+The intertemporal budget constraint in expectation:
+
+$$\mathbb{E}_t\left[\sum_{n=0}^{\infty} R^{-n} c_{t+n}\right] = b_t + \mathbb{E}_t\left[\sum_{n=0}^{\infty} R^{-n} y_{t+n}\right]$$
+
+Since $\mathbb{E}_t[c_{t+1}] = c_t$ (random walk), the left side simplifies to $c_t \cdot R/(R-1)$.
+
+The expected PDV of income is $b_t + \theta_t + p_t \cdot R/(R-1)$, because the transitory shock $\theta_t$ appears only in the current period, while $p_t$ persists forever.
+
+## Key Result: The Consumption Function
+
+Equating the two sides and solving for $c_t$:
+
+$$\boxed{c_t = \frac{r}{R}(b_t + \theta_t) + p_t}$$
+
+The MPC depends on the **nature of the income shock**:
+
+| Shock type | MPC | Typical value |
+|---|---|---|
+| Transitory ($\theta_t$) | $r/R$ | $\approx 0.05$ |
+| Permanent ($\psi_t$) | $1$ | $1.00$ |
+
+A dollar of transitory income raises consumption by only 5 cents; a dollar of permanent income raises it by a full dollar.
+
+## Code: MPC Comparison
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+r_vals = np.linspace(0.01, 0.10, 200)
+R_vals = 1 + r_vals
+mpc_transitory = r_vals / R_vals
+mpc_permanent = np.ones_like(r_vals)
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+# Left: MPC as function of r
+axes[0].plot(r_vals, mpc_transitory, 'b-', lw=2, label='Transitory shock')
+axes[0].plot(r_vals, mpc_permanent, 'r-', lw=2, label='Permanent shock')
+axes[0].set_xlabel('Interest rate $r$')
+axes[0].set_ylabel('MPC')
+axes[0].set_title('MPC by shock type')
+axes[0].legend()
+axes[0].set_ylim(0, 1.1)
+axes[0].grid(True, alpha=0.3)
+
+# Right: Bar chart at r = 0.04
+r = 0.04
+R = 1.04
+bars = axes[1].bar(['Transitory\n$\\theta_t$', 'Permanent\n$\\psi_t$'],
+                    [r / R, 1.0], color=['steelblue', 'indianred'],
+                    width=0.5)
+for bar, val in zip(bars, [r / R, 1.0]):
+    axes[1].text(bar.get_x() + bar.get_width() / 2, val + 0.03,
+                 f'{val:.3f}', ha='center', fontsize=11)
+axes[1].set_ylabel('MPC')
+axes[1].set_title(f'MPC at $r = {r:.0%}$: Muth\'s insight')
+axes[1].set_ylim(0, 1.2)
+axes[1].grid(True, alpha=0.3, axis='y')
+
+plt.tight_layout()
+plt.show()
+```
+
+## Why the Keynesian Consumption Function Fails
+
+The "Keynesian" consumption function $c_t = \alpha_0 + \alpha_1 y_t$ assumes a single MPC $\alpha_1$ relating consumption to income. But the true MPC depends on the nature of the shock:
+
+- If income changes are mostly **transitory**: $\alpha_1 \approx r/R \approx 0.05$
+- If income changes are mostly **permanent**: $\alpha_1 \approx 1$
+
+There is no "true" value of $\alpha_1$. The consumption function is meaningless without specifying the income process.
+
+**Hall's (1978) innovation:** test the theory by examining whether lagged variables predict $\Delta c_{t+1}$, bypassing the need to specify what consumers believe about income. This avoids arbitrary and difficult-to-test assumptions about the structure of the income process.
+
+## Code: Transitory vs Permanent Shocks
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(123)
+T = 60
+r, R = 0.04, 1.04
+p0 = 50.0
+b0 = 10.0
+
+# Simulate income process
+psi = np.random.normal(0, 2.0, T)  # permanent shocks
+xi = np.random.normal(0, 5.0, T)  # transitory shocks
+
+p = np.zeros(T + 1)
+p[0] = p0
+for t in range(T):
+    p[t + 1] = p[t] + psi[t]
+
+# Simulate consumption with evolving bank balances
+b = np.zeros(T + 1)
+b[0] = b0
+y = np.zeros(T)
+c = np.zeros(T)
+for t in range(T):
+    y[t] = p[t + 1] + xi[t]
+    c[t] = (r / R) * (b[t] + xi[t]) + p[t + 1]
+    if t < T - 1:
+        b[t + 1] = (b[t] + y[t] - c[t]) * R
+
+fig, ax = plt.subplots()
+ax.plot(range(T), y, 'gray', lw=1, alpha=0.6, label='Income $y_t$')
+ax.plot(range(T), p[1:], 'b-', lw=2, label='Permanent income $p_t$')
+ax.plot(range(T), c, 'r-', lw=2, label='Consumption $c_t$')
+ax.set_xlabel('Period')
+ax.set_ylabel('Level')
+ax.set_title('Consumption tracks permanent income, not observed income')
+ax.legend(fontsize=9)
+ax.grid(True, alpha=0.3)
+plt.show()
+```
+
+# Summary
+
+## Key Takeaways (1/2)
+
+- **Envelope theorem:** $v'(m) = u'(c)$; marginal value equals marginal utility, extending the Euler equation to general $T$-period problems
+- **Perfect foresight CRRA:** consumption grows at factor $\Phi = (R\beta)^{1/\rho}$; the consumption function is $c = \kappa \cdot o$ where $\kappa = 1 - \Phi/R$
+- **Three conditions** for the infinite-horizon solution:
+  - AIC ($\Phi < 1$): consumption falls over time
+  - FHWC ($G < R$): human wealth is finite
+  - RIC ($\Phi/R < 1$): PDV of consumption is finite
+
+## Key Takeaways (2/2)
+
+- **Human wealth effect** dominates income and substitution effects: consumption is very sensitive to interest rate changes (Summers, 1981)
+- **Random walk (Hall, 1978):** with quadratic utility and $R\beta = 1$, no lagged variable predicts consumption changes; a powerful, model-free test
+- **The consumption function:** MPC depends on whether a shock is transitory ($r/R \approx 0.05$) or permanent ($\approx 1$)
+- **Muth's insight:** the "Keynesian" consumption function $c = \alpha_0 + \alpha_1 y$ is meaningless without specifying the income process
+
+## How the Topics Connect
+
+The four topics trace a logical arc:
+
+- **Envelope condition:** generalizes the Euler equation to $T$ periods via $v'(m) = u'(c)$
+- **Perfect foresight CRRA:** solves the multiperiod problem analytically; introduces impatience conditions that discipline the model
+- **Random walk:** specializes the Euler equation under quadratic utility; shows how to test the theory without knowing the income process
+- **Consumption function:** derives the optimal response to different income shocks; explains why naive regressions of $c$ on $y$ are misleading
