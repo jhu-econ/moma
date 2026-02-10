@@ -231,3 +231,6 @@ sources/
 slides/**/*.html
 slides/**/*_files/
 slides/**/mathjax-config.js
+
+# Claude Code
+.claude/

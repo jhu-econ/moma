@@ -35,9 +35,11 @@ These lectures are developed by and belong to [QuantEcon](https://quantecon.org/
 - **Sources:**
   - <https://github.com/QuantEcon/lecture-python-programming.myst>
   - <https://github.com/QuantEcon/lecture-python-intro>
+  - <https://github.com/QuantEcon/lecture-python.myst>
 - **Websites:**
   - <https://python-programming.quantecon.org/>
   - <https://intro.quantecon.org/>
+  - <https://python.quantecon.org/>
 - **License:** [BSD-3-Clause](https://github.com/QuantEcon/lecture-python-programming.myst/blob/main/LICENSE)
 
 ## Contents
@@ -49,6 +51,7 @@ These lectures are developed by and belong to [QuantEcon](https://quantecon.org/
 | `foundations/matplotlib.md` | Matplotlib |
 | `foundations/scipy.md` | SciPy |
 | `nonlinear/olg.md` | The Overlapping Generations Model |
+| `consumption/perm_income.md` | The Permanent Income Model |
 
 ## Modifications
 
