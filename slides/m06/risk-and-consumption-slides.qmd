@@ -1,0 +1,358 @@
+---
+title: "Risk and Consumption"
+subtitle: "CRRA with Risky Returns, CARA with Income Risk, and Time-Varying Interest Rates"
+format: revealjs
+date: 2025-02-24
+pyodide:
+  packages:
+    - numpy
+    - matplotlib
+---
+
+# CRRA with Risky Returns
+
+## Setup
+
+A consumer with CRRA utility $u(c) = c^{1-\rho}/(1-\rho)$ holds a single risky asset with lognormal return factor $\tilde{R}$:
+
+$$\log \tilde{R}_{t+1} \sim \mathcal{N}\!\left(\tilde{r} - \sigma_r^2/2,\; \sigma_r^2\right)$$
+
+The dynamic budget constraint uses market resources $m_t$:
+
+$$m_{t+1} = (m_t - c_t)\,\tilde{R}_{t+1}$$
+
+No labor income enters. The consumer's only wealth is the risky portfolio.
+
+## The Euler Equation
+
+Start with the standard CRRA Euler equation:
+
+$$1 = \beta\,\mathbb{E}_t\!\left[\tilde{R}_{t+1}\left(\frac{c_{t+1}}{c_t}\right)^{-\rho}\right]$$
+
+**Guess** a linear consumption rule $c_t = \kappa\, m_t$. Because market resources appear in both the numerator and denominator, they cancel.
+
+If labor income entered the numerator, this guess-and-verify approach would fail.
+
+## Verifying the Guess
+
+Substituting $c_t = \kappa\,m_t$ and $m_{t+1} = (1-\kappa)\,m_t\,\tilde{R}_{t+1}$:
+
+$$\begin{aligned}
+1 &= \beta\,\mathbb{E}_t\!\left[\tilde{R}_{t+1}\bigl((1-\kappa)\tilde{R}_{t+1}\bigr)^{-\rho}\right] \\
+  &= \beta\,(1-\kappa)^{-\rho}\,\mathbb{E}_t\!\left[\tilde{R}_{t+1}^{1-\rho}\right]
+\end{aligned}$$
+
+Solving for $\kappa$: $(1-\kappa)^{\rho} = \beta\,\mathbb{E}_t[\tilde{R}_{t+1}^{1-\rho}]$.
+
+## The Exact MPC
+
+The marginal propensity to consume is
+
+$$\boxed{\kappa = 1 - \left(\beta\,\mathbb{E}_t[\tilde{R}_{t+1}^{1-\rho}]\right)^{1/\rho}}$$
+
+This is an exact, closed-form result. No approximation is needed because the linear consumption rule and lognormal returns allow the expectation to be evaluated analytically.
+
+## Evaluating the Expectation
+
+Since $\log \tilde{R}_{t+1}^{1-\rho} = (1-\rho)\log \tilde{R}_{t+1}$ is normally distributed, the lognormal moment formula gives
+
+$$\mathbb{E}_t[\tilde{R}_{t+1}^{1-\rho}] = \exp\!\left[(1-\rho)\,\tilde{r} - \rho(1-\rho)\,\sigma_r^2/2\right]$$
+
+The key step is collecting terms: the $(1-\rho)^2\sigma_r^2/2$ from the lognormal formula simplifies with the $-(1-\rho)\sigma_r^2/2$ from the mean specification.
+
+## The Approximate MPC
+
+Substituting into the exact formula and applying Taylor approximations ($\beta^{1/\rho} \approx \exp(-\rho^{-1}\vartheta)$ where $\vartheta$ is the discount rate):
+
+$$\kappa \approx \tilde{r} - \rho^{-1}(\tilde{r} - \vartheta) - (\rho - 1)\,\sigma_r^2/2$$
+
+Three terms, three forces:
+
+| Term | Force |
+|---|---|
+| $\tilde{r}$ | Income effect of the return |
+| $-\rho^{-1}(\tilde{r} - \vartheta)$ | Intertemporal substitution |
+| $-(\rho-1)\sigma_r^2/2$ | Precautionary saving |
+
+## Precautionary Saving
+
+When $\sigma_r^2 = 0$, the formula reduces to the perfect foresight result $\kappa = \tilde{r} - \rho^{-1}(\tilde{r} - \vartheta)$.
+
+As risk rises ($\sigma_r^2$ increases), the MPC *falls* because the $-(\rho-1)\sigma_r^2/2$ term is negative for $\rho > 1$. Falling MPC means the consumer saves more: the **precautionary saving motive**.
+
+With log utility ($\rho = 1$), the risk term vanishes. The covariance between $\tilde{R}$ and $u'(c_{t+1})$ exactly offsets the Jensen's inequality effect, a special case that makes log utility implausibly insensitive to risk.
+
+## Code: MPC vs Risk Aversion and Risk
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+r_tilde, sigma, vartheta = 0.04, 0.15, 0.04
+rho_grid = np.linspace(1.01, 6, 200)
+
+# Exact MPC
+def exact_mpc(rho, r, sig, beta):
+    E_R = np.exp((1-rho)*r - rho*(1-rho)*sig**2/2)
+    return 1 - (beta * E_R)**(1/rho)
+
+# Approximate MPC
+def approx_mpc(rho, r, sig, theta):
+    return r - (r - theta)/rho - (rho - 1)*sig**2/2
+
+beta = 1/(1 + vartheta)
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+axes[0].plot(rho_grid, [exact_mpc(rho, r_tilde, sigma, beta) for rho in rho_grid],
+             lw=2, label='Exact')
+axes[0].plot(rho_grid, [approx_mpc(rho, r_tilde, sigma, vartheta) for rho in rho_grid],
+             '--', lw=2, label='Approx')
+axes[0].set_xlabel(r'Risk aversion $\rho$')
+axes[0].set_ylabel(r'MPC $\kappa$')
+axes[0].set_title(r'MPC falls as $\rho$ rises ($\sigma = 0.15$)')
+axes[0].legend(fontsize=8); axes[0].grid(True, alpha=0.3)
+sig_grid = np.linspace(0, 0.30, 200)
+rho_fixed = 3.0
+axes[1].plot(sig_grid, [exact_mpc(rho_fixed, r_tilde, s, beta) for s in sig_grid],
+             lw=2, label='Exact')
+axes[1].plot(sig_grid, [approx_mpc(rho_fixed, r_tilde, s, vartheta) for s in sig_grid],
+             '--', lw=2, label='Approx')
+axes[1].set_xlabel(r'Return volatility $\sigma_r$')
+axes[1].set_ylabel(r'MPC $\kappa$')
+axes[1].set_title(r'MPC falls as risk rises ($\rho = 3$)')
+axes[1].legend(fontsize=8); axes[1].grid(True, alpha=0.3)
+plt.tight_layout(); plt.show()
+```
+
+# CARA with Income Risk
+
+## Setup
+
+A consumer with constant absolute risk aversion (CARA) utility:
+
+$$u(C) = -\frac{1}{\alpha}\,e^{-\alpha C}, \qquad u'(C) = e^{-\alpha C}$$
+
+faces a constant interest rate $r = R - 1$, budget constraint $M_{t+1} = (M_t - C_t)R + Y_{t+1}$, and random-walk permanent income:
+
+$$Y_{t+1} = \bar{P}_{t+1} + P_{t+1}, \quad \bar{P}_{t+1} = \Gamma\bar{P}_t, \quad P_{t+1} = P_t + \Psi_{t+1}$$
+
+where $\Psi_{t+1} \sim \mathcal{N}(0, \sigma_\Psi^2)$.
+
+## Perfect Foresight: Additive Growth
+
+Under CARA utility, the Euler equation implies *additive* changes in consumption levels (contrast with the *multiplicative* growth under CRRA):
+
+$$C_{t+1} = C_t + \frac{1}{\alpha}\log(R\beta)$$
+
+The intertemporal elasticity of substitution $\alpha^{-1}$ governs the absolute increment in consumption, not its growth rate.
+
+## Solution Under Uncertainty
+
+With normally distributed permanent shocks $\Psi_{t+1}$, the consumption process that satisfies the FOC is
+
+$$\boxed{C_{t+1} = C_t + \frac{1}{\alpha}\log(R\beta) + \frac{\alpha\sigma_\Psi^2}{2} + \Psi_{t+1}}$$
+
+**Verification:** substituting into $1 = R\beta\,\mathbb{E}_t[e^{-\alpha(C_{t+1} - C_t)}]$ and using the lognormal moment formula, all terms cancel to yield $1 = 1$.
+
+## The Precautionary Premium
+
+Define $\hat{\kappa} = \alpha^{-1}\log(R\beta) + \alpha\sigma_\Psi^2/2$. Then
+
+$$C_{t+1} = C_t + \hat{\kappa} + \Psi_{t+1}$$
+
+The term $\alpha\sigma_\Psi^2/2$ is the **precautionary premium**: expected consumption growth is faster than under certainty, because the consumer saves more today to buffer against future income risk. The premium increases in both risk aversion $\alpha$ and income volatility $\sigma_\Psi^2$.
+
+## The Consumption Function
+
+Imposing the intertemporal budget constraint (PDV of consumption = wealth + PDV of income):
+
+$$C_t = P_t + \frac{r}{R}\left[B_t + \frac{\bar{P}_t}{1 - \Gamma/R}\right] - r\left(\frac{\alpha^{-1}\log(R\beta) + \alpha\sigma_\Psi^2/2}{(1-R)^2}\right)$$
+
+Three terms, three forces:
+
+1. **$P_t$**: the consumer's idiosyncratic permanent income level
+2. **$\frac{r}{R}[\cdots]$**: interest income on total "certain" wealth (human + nonhuman)
+3. **Precautionary + substitution**: the combined effect of impatience and income risk
+
+## Two Peculiarities
+
+**The MPC out of capital does not depend on impatience.**
+
+The marginal effect of bank balances on consumption is $\partial C_t / \partial B_t = r/R$, the interest income on an extra dollar. Impatience affects the *change* in consumption over time, but not the level (given the budget constraint).
+
+**Precautionary saving is independent of wealth.**
+
+The dollar amount saved for precautionary reasons ($\alpha\sigma_\Psi^2/2$ per period) is the same regardless of the consumer's resources. This follows from the constant absolute risk aversion property: risk attitudes do not scale with wealth.
+
+## Infinite Horizon: Patience and Impatience
+
+The infinite-horizon consumption function simplifies to
+
+$$C_t = \frac{R - (R\beta)^{1/\alpha}}{R}\,W_t$$
+
+where $W_t = B_t + H_t$ is total wealth. The consumer is:
+
+- **Impatient** (spends more than income) if $(R\beta)^{1/\alpha} < 1$
+- **Balanced** (spends exactly income) if $R\beta = 1$
+- **Patient** (saves) if $(R\beta)^{1/\alpha} > 1$
+
+When $R\beta = 1$, the consumer spends $\kappa\,W_t = (r/R)\,W_t$: exactly the interest income on total wealth.
+
+## The Three Effects of $r$
+
+Using the approximation $C_t \approx (r - \alpha^{-1}(r - \vartheta))\,W_t$ (where $\vartheta$ is the time preference rate) and writing human wealth as $H = \bar{Y}\,R/r$:
+
+$$C_t \approx \bigl(\underbrace{r}_{\text{income}} - \underbrace{\alpha^{-1}(r - \vartheta)}_{\text{substitution}}\bigr)\left[B_t + \underbrace{\bar{Y}\,\frac{R}{r}}_{\text{human wealth}}\right]$$
+
+A change in $r$ affects consumption through all three channels, and the net effect depends on their relative magnitudes.
+
+## Code: CARA Consumption Paths
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+R, beta_disc, alpha_cara = 1.04, 0.96, 2.0
+sigma_psi_vals = [0.0, 0.05, 0.10]
+T = 60
+np.random.seed(42)
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+for sig in sigma_psi_vals:
+    khat = np.log(R * beta_disc) / alpha_cara + alpha_cara * sig**2 / 2
+    C = np.zeros(T)
+    C[0] = 10.0
+    for t in range(1, T):
+        noise = np.random.normal(0, sig) if sig > 0 else 0.0
+        C[t] = C[t-1] + khat + noise
+    axes[0].plot(C, lw=1.5, label=rf'$\sigma_\Psi = {sig}$')
+axes[0].set_xlabel('Period')
+axes[0].set_ylabel('Consumption $C_t$')
+axes[0].set_title('CARA consumption paths')
+axes[0].legend(fontsize=8); axes[0].grid(True, alpha=0.3)
+# Precautionary premium as function of sigma
+sig_range = np.linspace(0, 0.15, 200)
+for a in [1.0, 2.0, 4.0]:
+    axes[1].plot(sig_range, a * sig_range**2 / 2, lw=2, label=rf'$\alpha = {a}$')
+axes[1].set_xlabel(r'Income volatility $\sigma_\Psi$')
+axes[1].set_ylabel(r'Precautionary premium $\alpha\sigma_\Psi^2/2$')
+axes[1].set_title('Precautionary premium rises with risk')
+axes[1].legend(fontsize=8); axes[1].grid(True, alpha=0.3)
+plt.tight_layout(); plt.show()
+```
+
+# Time-Varying Interest Rates
+
+## Setup: Campbell-Mankiw Framework
+
+An infinite-horizon representative agent holds total wealth $W_t$ (human plus nonhuman). The riskless but time-varying return factor is $R_{t+1}$:
+
+$$W_{t+1} = (W_t - C_t)\,R_{t+1}$$
+
+The goal is to derive how the consumption-wealth ratio responds to changes in the path of interest rates, separating income and substitution effects.
+
+## Log-Linearizing the Budget Constraint
+
+Dividing by $W_t$ and taking logs:
+
+$$\Delta w_{t+1} \approx r_{t+1} + \log(1 - \exp(c_t - w_t))$$
+
+where lowercase letters denote logs. Define $x_t = c_t - w_t$ (the log consumption-wealth ratio) and expand around the steady-state value $\bar{x}$:
+
+$$\Delta w_{t+1} \approx r_{t+1} + \log\xi + (1 - 1/\xi)(c_t - w_t)$$
+
+where $\xi = 1 - \exp(\bar{x})$ is slightly below one (since $C/W$ is small).
+
+## Forward Iteration
+
+Setting two expressions for $\Delta w_{t+1}$ equal and iterating forward yields the **approximate IBC**:
+
+$$c_t - w_t = \sum_{j=1}^{\infty} \xi^j\,(r_{t+j} - \Delta c_{t+j}) + \frac{\xi\,k}{1-\xi}$$
+
+This result is purely accounting: no behavioral assumptions yet. It says the log consumption-wealth ratio must equal the discounted value of future returns minus future consumption growth.
+
+## Substituting the Euler Equation
+
+A perfect-foresight CRRA consumer satisfies $\Delta c_{t+1} = \mu + \rho^{-1} r_{t+1}$, where $\mu = \rho^{-1}\log\beta$ and $\rho^{-1}$ is the intertemporal elasticity of substitution. Substituting:
+
+$$\boxed{c_t - w_t = (1 - \rho^{-1})\sum_{j=1}^{\infty}\xi^j\,r_{t+j} + \frac{\xi(k - \mu)}{1-\xi}}$$
+
+The coefficient $(1 - \rho^{-1})$ governs how the consumption-wealth ratio responds to expected future interest rates.
+
+## Income vs. Substitution Effects
+
+The coefficient $(1 - \rho^{-1})$ determines the net effect of higher future interest rates:
+
+| $\rho$ | IES $= \rho^{-1}$ | $1 - \rho^{-1}$ | Net effect |
+|---|---|---|---|
+| $< 1$ | $> 1$ | $< 0$ | Substitution dominates: save more |
+| $= 1$ | $= 1$ | $0$ | Effects cancel (log utility) |
+| $> 1$ | $< 1$ | $> 0$ | Income dominates: consume more |
+
+When $\rho > 1$ (the empirically relevant case), higher expected future returns raise the consumption-wealth ratio today: the consumer feels richer.
+
+## The Human Wealth Channel
+
+The Campbell-Mankiw result holds current wealth $w_t$ fixed. But interest rate changes also alter the present value of future labor income:
+
+$$H_t \approx \frac{Y_t}{r - g}$$
+
+A permanent drop in $r$ has an enormous effect on $H_t$, and therefore on $W_t$ itself. Summers (1981) showed that this human wealth channel dominates for most calibrations, making the full effect of interest rate changes much larger than the partial-equilibrium result suggests.
+
+## Code: Consumption-Wealth Ratio and Interest Rates
+
+```{pyodide}
+import numpy as np
+import matplotlib.pyplot as plt
+
+xi = 0.97
+rho_vals = [0.5, 1.0, 2.0, 5.0]
+# Impulse response: a temporary 1pp increase in r at t=1
+T_irf = 30
+r_shock = np.zeros(T_irf)
+r_shock[1] = 0.01  # 1 percentage point shock
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+for rho in rho_vals:
+    coeff = 1 - 1/rho
+    cw_response = np.zeros(T_irf)
+    for t in range(T_irf):
+        cw_response[t] = coeff * sum(xi**j * r_shock[t+j] if t+j < T_irf else 0
+                                      for j in range(1, T_irf))
+    axes[0].plot(cw_response * 100, lw=2, label=rf'$\rho = {rho}$')
+axes[0].set_xlabel('Period')
+axes[0].set_ylabel(r'$\Delta(c_t - w_t)$ (pp)')
+axes[0].set_title('Response to a 1pp interest rate shock')
+axes[0].legend(fontsize=8); axes[0].grid(True, alpha=0.3)
+# Coefficient (1 - 1/rho) as function of rho
+rho_range = np.linspace(0.3, 6, 200)
+axes[1].plot(rho_range, 1 - 1/rho_range, lw=2, color='C0')
+axes[1].axhline(0, color='gray', lw=0.8, ls='--')
+axes[1].axvline(1, color='gray', lw=0.8, ls='--')
+axes[1].set_xlabel(r'Risk aversion $\rho$')
+axes[1].set_ylabel(r'Coefficient $1 - \rho^{-1}$')
+axes[1].set_title('Income vs. substitution effect')
+axes[1].annotate('Substitution\ndominates', xy=(0.5, -0.8), fontsize=8, ha='center')
+axes[1].annotate('Income\ndominates', xy=(4, 0.6), fontsize=8, ha='center')
+axes[1].grid(True, alpha=0.3)
+plt.tight_layout(); plt.show()
+```
+
+# Summary
+
+## Key Takeaways (1/2)
+
+- **CRRA with risky returns:** the MPC out of risky wealth is $\kappa = 1 - (\beta\,\mathbb{E}[\tilde{R}^{1-\rho}])^{1/\rho}$; the approximate formula reveals three forces: income, substitution, and precautionary saving
+- **Log utility is special:** with $\rho = 1$ the precautionary term vanishes because the covariance between the return and marginal utility exactly offsets the Jensen's inequality effect; $\rho \geq 2$ is a plausible lower bound
+
+## Key Takeaways (2/2)
+
+- **CARA with income risk:** CARA utility produces additive (not multiplicative) consumption changes and a closed-form precautionary premium $\alpha\sigma_\Psi^2/2$ that is independent of wealth
+- **Time-varying $R$:** the Campbell-Mankiw decomposition shows the consumption-wealth ratio depends on the coefficient $(1 - \rho^{-1})$ times expected future returns; when $\rho > 1$ (empirically relevant), the income effect dominates
+
+## Connections Across Models
+
+| Feature | CRRA + Risky $R$ | CARA + $Y$ Risk | Time-Varying $R$ |
+|---|---|---|---|
+| Utility | $c^{1-\rho}/(1-\rho)$ | $-(1/\alpha)e^{-\alpha C}$ | $c^{1-\rho}/(1-\rho)$ |
+| Risk source | Return | Income | Interest rate path |
+| Precautionary saving | $-(\rho-1)\sigma_r^2/2$ | $\alpha\sigma_\Psi^2/2$ | Through human wealth |
+| Key parameter | IES = $\rho^{-1}$ | ARA = $\alpha$ | IES = $\rho^{-1}$ |

@@ -58,6 +58,7 @@ project:
         - file: notes/lecture_03.md
         - file: notes/lecture_04.md
         - file: notes/lecture_05.md
+        - file: notes/lecture_06.md
     - file: slides/README.md
       title: Slides
     - file: notebooks/README.md
@@ -68,6 +69,7 @@ project:
         - file: notebooks/envelope_crra.md
         - file: notebooks/random_walk_cons_fn.md
         - file: notebooks/advanced_consumption.md
+        - file: notebooks/risk_and_consumption.md
     - file: quantecon/README.md
       title: QuantEcon
       children:

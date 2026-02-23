@@ -29,6 +29,7 @@ This directory contains MyST Markdown computational notebooks that serve as comp
 | `envelope_crra.md` | The envelope condition, multiperiod Euler equation, and the perfect foresight CRRA consumption model |
 | `random_walk_cons_fn.md` | Hall's random walk proposition, the permanent income hypothesis, and MPCs out of permanent vs transitory shocks |
 | `advanced_consumption.md` | Habit formation, durable goods, and quasi-hyperbolic discounting (Laibson) |
+| `risk_and_consumption.md` | CRRA with risky returns, CARA with income risk, and Campbell-Mankiw time-varying interest rates |
 
 ## Libraries
 
