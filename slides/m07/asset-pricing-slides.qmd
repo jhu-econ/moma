@@ -95,6 +95,26 @@ provided that a transversality condition holds (we examine what happens when it 
 
 The price equals the **present discounted value** of future dividends, and now we know *which* discount factor to use: the SDF $\mathcal{M}_{t,t+n}$, which depends on preferences and the dividend process.
 
+## The Gordon Formula
+
+If dividends grow at constant factor $G$ forever, the PDV is a geometric series:
+
+$$P_t^* = d_t \sum_{s=1}^{\infty} (G/R)^s = d_t \cdot \frac{G/R}{1 - G/R} \approx \frac{d_t}{r - g}$$
+
+where $r$ and $g$ are log counterparts and the approximation uses $R/G \approx 1 + r - g$ for small $r$ and $g$.
+
+This is the **Gordon growth model**, the workhorse of equity valuation. The discount rate should be $R = R^f + \phi$, where $\phi$ is the risk premium. A 1 percentage point drop in $r - g$ can have a dramatic effect on valuations: if $r - g$ falls from 4% to 3%, $P/d$ jumps from 25 to 33.
+
+## The Random Walk of Prices
+
+If a security price at time $t$ equals the rational expectation of some fundamental value $V^*$:
+
+$$P_t = \mathbb{E}_t[V^*], \qquad P_{t+1} = \mathbb{E}_{t+1}[V^*]$$
+
+Then $\mathbb{E}_t[P_{t+1} - P_t] = \mathbb{E}_t[\mathbb{E}_{t+1}[V^*]] - \mathbb{E}_t[V^*] = 0$
+
+by the law of iterated expectations. Price changes are driven only by the arrival of new information. Prices follow a martingale, which is why "beating the market" is difficult: all known information is already embedded in the price.
+
 ## Specializing to CRRA Utility
 
 With CRRA utility $u(c) = c^{1-\rho}/(1-\rho)$, marginal utility is $u'(c) = c^{-\rho}$. Substituting into the pricing equation:
@@ -249,6 +269,56 @@ This is *smaller* when $\sigma^2_r$ is *larger*. The consumer does not merely re
 
 If she scaled down $\varsigma$ just enough to keep portfolio variance constant, she would bear the same risk for a lower expected return. That cannot be optimal, so she reduces exposure further.
 
+# Consumption with Optimal Portfolio Choice
+
+## MPC with Unavoidable Risk (Review from Lecture 06)
+
+For a consumer whose *only* asset has lognormal return with log mean $\tilde{r}$ and variance $\sigma^2_{\tilde{r}}$, the approximate MPC is
+
+$$\kappa \approx \underbrace{\tilde{r}}_{\text{income}} - \underbrace{\rho^{-1}(\tilde{r} - \vartheta)}_{\text{substitution}} - \underbrace{(\rho - 1)\sigma^2_{\tilde{r}}/2}_{\text{precautionary}}$$
+
+When the risk is unavoidable, higher $\sigma^2_{\tilde{r}}$ reduces $\kappa$ for $\rho > 1$: the consumer saves more as a precaution against bad returns. The precautionary term is increasing in both risk aversion and risk.
+
+## Adding Portfolio Choice
+
+Now suppose the consumer can split wealth between the risky asset and a riskfree asset earning $r^f$. From the Merton-Samuelson formula, $\varsigma = \phi/(\rho \sigma^2_r)$. The variance of the optimally-chosen portfolio is
+
+$$\sigma^2_{r^p} = \varsigma^2 \sigma^2_r = \frac{(\phi/\rho)^2}{\sigma^2_r}$$
+
+Substituting $\sigma^2_{r^p}$ for $\sigma^2_{\tilde{r}}$ in the precautionary term:
+
+$$-(\rho-1)\frac{\sigma^2_{r^p}}{2} = -(\rho-1)\frac{(\phi/\rho)^2}{2\sigma^2_r}$$
+
+## The Precautionary Reversal
+
+As $\sigma^2_r$ increases, the precautionary term $-(\rho-1)(\phi/\rho)^2/(2\sigma^2_r)$ *shrinks* in absolute value (the denominator grows). The consumer's flight from the risky asset is so effective (because $\varsigma$ enters the portfolio variance as a *squared* term) that the riskiness of the *portfolio* actually *declines* when the underlying risky asset gets riskier.
+
+The full MPC after portfolio optimization:
+
+$$\kappa \approx r^f - \rho^{-1}(r^f - \vartheta) + (\rho-1)\frac{(\phi/\rho)^2}{2\sigma^2_r}$$
+
+Note the sign change on the last term: it is now *positive*, reflecting the net of all three effects after substitution.
+
+## Three Effects of Increased Asset Risk
+
+| Channel | Effect on $\kappa$ | Mechanism |
+|---|---|---|
+| **Precautionary** | $\uparrow$ (saves *less*) | Portfolio rebalancing reduces portfolio risk |
+| **Income** | $\downarrow$ (lower portfolio return) | Consumer flees risky asset, earns less |
+| **Substitution** | $\uparrow$ (lower return $\Rightarrow$ less delay) | Lower portfolio return reduces incentive to wait |
+
+For $\rho > 1$, the income effect dominates: increased asset risk *reduces* consumption because the last term shrinks as $\sigma^2_r$ rises.
+
+## The Effect on Saving
+
+The "saving effect" (income minus consumption, $r^p - \kappa$) is
+
+$$r^p - \kappa \approx \rho^{-1}(r^f - \vartheta) + \frac{\rho+1}{2} \cdot \frac{\phi^2}{\sigma^2_r \rho^2}$$
+
+As $\sigma^2_r$ increases, the second term falls, so saving *falls*: expected portfolio income declines by more than consumption does.
+
+This is **not** purely a precautionary saving effect. With log utility ($\rho = 1$), the precautionary term vanishes entirely, yet portfolio and income effects still generate reduced saving.
+
 # The Consumption CAPM
 
 ## The Question the C-CAPM Answers
@@ -357,57 +427,7 @@ The equity premium puzzle says $\rho$ must be very large ($\approx 20$). The ris
 
 Proposed resolutions include habit formation, rare disasters, long-run consumption risk, and limited stock market participation.
 
-# Consumption with Optimal Portfolio Choice
-
-## MPC with Unavoidable Risk (Review from Lecture 06)
-
-For a consumer whose *only* asset has lognormal return with log mean $\tilde{r}$ and variance $\sigma^2_{\tilde{r}}$, the approximate MPC is
-
-$$\kappa \approx \underbrace{\tilde{r}}_{\text{income}} - \underbrace{\rho^{-1}(\tilde{r} - \vartheta)}_{\text{substitution}} - \underbrace{(\rho - 1)\sigma^2_{\tilde{r}}/2}_{\text{precautionary}}$$
-
-When the risk is unavoidable, higher $\sigma^2_{\tilde{r}}$ reduces $\kappa$ for $\rho > 1$: the consumer saves more as a precaution against bad returns. The precautionary term is increasing in both risk aversion and risk.
-
-## Adding Portfolio Choice
-
-Now suppose the consumer can split wealth between the risky asset and a riskfree asset earning $r^f$. From the Merton-Samuelson formula, $\varsigma = \phi/(\rho \sigma^2_r)$. The variance of the optimally-chosen portfolio is
-
-$$\sigma^2_{r^p} = \varsigma^2 \sigma^2_r = \frac{(\phi/\rho)^2}{\sigma^2_r}$$
-
-Substituting $\sigma^2_{r^p}$ for $\sigma^2_{\tilde{r}}$ in the precautionary term:
-
-$$-(\rho-1)\frac{\sigma^2_{r^p}}{2} = -(\rho-1)\frac{(\phi/\rho)^2}{2\sigma^2_r}$$
-
-## The Precautionary Reversal
-
-As $\sigma^2_r$ increases, the precautionary term $-(\rho-1)(\phi/\rho)^2/(2\sigma^2_r)$ *shrinks* in absolute value (the denominator grows). The consumer's flight from the risky asset is so effective (because $\varsigma$ enters the portfolio variance as a *squared* term) that the riskiness of the *portfolio* actually *declines* when the underlying risky asset gets riskier.
-
-The full MPC after portfolio optimization:
-
-$$\kappa \approx r^f - \rho^{-1}(r^f - \vartheta) + (\rho-1)\frac{(\phi/\rho)^2}{2\sigma^2_r}$$
-
-Note the sign change on the last term: it is now *positive*, reflecting the net of all three effects after substitution.
-
-## Three Effects of Increased Asset Risk
-
-| Channel | Effect on $\kappa$ | Mechanism |
-|---|---|---|
-| **Precautionary** | $\uparrow$ (saves *less*) | Portfolio rebalancing reduces portfolio risk |
-| **Income** | $\downarrow$ (lower portfolio return) | Consumer flees risky asset, earns less |
-| **Substitution** | $\uparrow$ (lower return $\Rightarrow$ less delay) | Lower portfolio return reduces incentive to wait |
-
-For $\rho > 1$, the income effect dominates: increased asset risk *reduces* consumption because the last term shrinks as $\sigma^2_r$ rises.
-
-## The Effect on Saving
-
-The "saving effect" (income minus consumption, $r^p - \kappa$) is
-
-$$r^p - \kappa \approx \rho^{-1}(r^f - \vartheta) + \frac{\rho+1}{2} \cdot \frac{\phi^2}{\sigma^2_r \rho^2}$$
-
-As $\sigma^2_r$ increases, the second term falls, so saving *falls*: expected portfolio income declines by more than consumption does.
-
-This is **not** purely a precautionary saving effect. With log utility ($\rho = 1$), the precautionary term vanishes entirely, yet portfolio and income effects still generate reduced saving.
-
-# Bubbles and Canonical Asset Pricing
+# Rational Bubbles
 
 ## Canonical Pricing Under Risk Neutrality
 
@@ -420,26 +440,6 @@ where $R$ is the constant gross discount rate. Forward iteration gives
 $$P_t = \mathbb{E}_t \left[\sum_{s=t+1}^{T+1} R^{t-s} d_s\right] + R^{-(T+1-t)} \mathbb{E}_t[P_{T+1}]$$
 
 If we impose the **no-bubbles condition** $\lim_{T \to \infty} R^{-(T+1-t)} \mathbb{E}_t[P_{T+1}] = 0$, the price equals the present discounted value of dividends. But this condition is an *assumption*, not a theorem.
-
-## The Gordon Formula
-
-If dividends grow at constant factor $G$ forever, the PDV is a geometric series:
-
-$$P_t^* = d_t \sum_{s=1}^{\infty} (G/R)^s = d_t \cdot \frac{G/R}{1 - G/R} \approx \frac{d_t}{r - g}$$
-
-where $r$ and $g$ are log counterparts and the approximation uses $R/G \approx 1 + r - g$ for small $r$ and $g$.
-
-This is the **Gordon growth model**, the workhorse of equity valuation. The discount rate should be $R = R^f + \phi$, where $\phi$ is the risk premium. A 1 percentage point drop in $r - g$ can have a dramatic effect on valuations: if $r - g$ falls from 4% to 3%, $P/d$ jumps from 25 to 33.
-
-## The Random Walk of Prices
-
-If a security price at time $t$ equals the rational expectation of some fundamental value $V^*$:
-
-$$P_t = \mathbb{E}_t[V^*], \qquad P_{t+1} = \mathbb{E}_{t+1}[V^*]$$
-
-Then $\mathbb{E}_t[P_{t+1} - P_t] = \mathbb{E}_t[\mathbb{E}_{t+1}[V^*]] - \mathbb{E}_t[V^*] = 0$
-
-by the law of iterated expectations. Price changes are driven only by the arrival of new information. Prices follow a martingale, which is why "beating the market" is difficult: all known information is already embedded in the price.
 
 ## Deterministic Bubbles
 
@@ -483,12 +483,12 @@ Despite these arguments, episodes like the dot-com boom and the 2008 housing cri
 
 - **Portfolio choice:** the CRRA investor allocates $\varsigma = \phi/(\rho \sigma^2_r)$ to the risky asset; portfolio risk actually *falls* when asset risk rises because the consumer rebalances aggressively
 
-- **C-CAPM:** every asset's expected excess return satisfies $\mathbb{E}[\mathbf{R}_i] - R^f \approx \rho \, \text{cov}(\Delta \log c, \mathbf{R}_i)$; only consumption covariance matters for pricing, not the asset's own variance
+- **Consumption with portfolio choice:** increased asset risk reduces consumption (for $\rho > 1$) through three interacting channels (income, substitution, and precautionary) with the income effect dominating
 
 ## Key Takeaways (2/2)
 
+- **C-CAPM:** every asset's expected excess return satisfies $\mathbb{E}[\mathbf{R}_i] - R^f \approx \rho \, \text{cov}(\Delta \log c, \mathbf{R}_i)$; only consumption covariance matters for pricing, not the asset's own variance
+
 - **Equity premium puzzle:** matching the 8% historical equity premium requires $\rho \approx 20$, while the riskfree rate puzzle requires $\rho < 1$; these point in opposite directions and remain an active area of research
 
-- **Consumption with portfolio choice:** increased asset risk reduces consumption (for $\rho > 1$) through three interacting channels (income, substitution, and precautionary) with the income effect dominating
-
-- **Bubbles:** the Euler equation admits solutions with rational bubbles that grow at rate $R^f$, but negative bubbles, reproducibility, risk aversion, and GE considerations restrict their plausibility
+- **Rational bubbles:** the Euler equation admits solutions with rational bubbles that grow at rate $R^f$, but negative bubbles, reproducibility, risk aversion, and GE considerations restrict their plausibility
