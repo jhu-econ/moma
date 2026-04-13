@@ -16,7 +16,7 @@ dependencies = [
     "pandas>=2.2.0",
     "quantecon>=0.10.1",
     "scipy>=1.17.0",
-    "sympy>=1.13.0",
+    "sympy>=1.14.0",
 ]
 
 [tool.setuptools]
