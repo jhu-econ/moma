@@ -1,5 +1,5 @@
 ---
-title: Field Trip: GW OSCON
+title: "Field Trip: GW OSCON"
 short_title: Lecture 09
 subtitle: Modeling Macroeconomics | Lecture 09
 label: lecture-09

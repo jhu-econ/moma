@@ -90,8 +90,8 @@ consumption (CLO2), asset pricing (CLO3), investment (CLO4), or growth (CLO5).
 On the last day of class, each group delivers a 10-minute presentation
 followed by 5 minutes of Q&A. Motivate the question, summarize model and
 methods without excessive derivation, show key figures, and discuss economic
-interpretation. Slides required; a live notebook demo is encouraged but not
-required.
+interpretation. Slides are not required; you may present directly from your
+computational notebook, from slides, or from any combination of the two.
 :::
 
 :::{note} Grading Weights
@@ -120,7 +120,7 @@ the time to finish the final project and review post-midterm material.
 The final session has two parts:
 
 1. **Group presentations** (first half): each group delivers a 10-minute talk followed by 5 minutes of Q&A. Final project notebooks are also due by 11:59 PM on this date.
-2. **Final exam** (second half): a short exam focused on material from *since the midterm*: investment theory, growth theory I and II, and DSGE (Lectures 10-13). Questions target post-midterm concepts, so earlier chapters will not be tested directly. The material itself is cumulative, though: asset pricing and growth build on the consumption foundations from the first half, and you are expected to bring that understanding with you.
+2. **Midterm 2** (second half): a short exam focused on material from *since Midterm 1*: investment theory, growth theory I and II, and DSGE (Lectures 10-13). Questions target post-midterm concepts, so earlier chapters will not be tested directly. The material itself is cumulative, though: asset pricing and growth build on the consumption foundations from the first half, and you are expected to bring that understanding with you.
 :::
 
 :::{tip} Course Materials
